@@ -628,6 +628,18 @@ function applyBackground(url){
   }catch(e){}
   await renderProjects();
 })();
+  async function loadProjects() {
+  try {
+    const response = await fetch('/api/projects');
+    const projects = await response.json();
+    console.log(projects); // Cela va afficher [] dans la console pour l'instant
+    // Ici, tu dois écrire le code pour créer des cartes HTML avec tes projets
+  } catch (error) {
+    console.error('Erreur lors du chargement des projets:', error);
+  }
+}
+
+loadProjects();
 </script>
 </body>
 </html>
