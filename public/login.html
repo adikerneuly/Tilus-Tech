@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin - Tilus-Tech</title>
+    <style>
+        body { font-family: sans-serif; background: #0d1117; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: #c9d1d9; }
+        .login-box { background: #161b22; padding: 40px; border-radius: 10px; border: 1px solid #30363d; width: 300px; text-align: center; }
+        h1 { font-size: 24px; margin-bottom: 20px; color: #58a6ff; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #0d1117; border: 1px solid #30363d; border-radius: 5px; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #238636; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #2ea043; }
+        #message { margin-top: 15px; font-size: 14px; color: #f85149; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Connexion Admin</h1>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Identifiant" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            <button type="submit">Se connecter</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('message');
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.location.href = '/admin'; // Redirection vers l'admin (ou l'accueil si tu n'as pas de page admin)
+                } else {
+                    msg.textContent = data.error || 'Identifiants incorrects';
+                }
+            } catch (err) {
+                msg.textContent = 'Erreur de connexion au serveur.';
+            }
+        });
+    </script>
+</body>
+</html>
