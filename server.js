@@ -1,65 +1,15 @@
-require('dotenv').config();
-const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
-
 const { ready } = require('./db');
-const authRoutes = require('./routes/auth');
-const projectsRoutes = require('./routes/projects');
-const messagesRoutes = require('./routes/messages');
-const settingsRoutes = require('./routes/settings');
+const app = require('./app');
 
-if (!process.env.JWT_SECRET || process.env.JWT_SECRET.includes('changez_moi')) {
-  console.warn('\n⚠️  ATTENTION : JWT_SECRET n\'est pas défini ou utilise la valeur par défaut.');
-}
-if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
-  console.warn('\n⚠️  ATTENTION : TURSO_DATABASE_URL ou TURSO_AUTH_TOKEN manquant.');
-}
-
-const app = express();
-
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:4000',
-  credentials: true
-}));
-app.use(express.json({ limit: '200kb' }));
-app.use(cookieParser());
-app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 120 }));
-
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectsRoutes);
-app.use('/api/messages', messagesRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: 'Erreur serveur.' });
-});
-
-// --- PARTIE FINALE POUR VERCEL ---
-let isDbReady = false;
+const PORT = process.env.PORT || 4000;
 
 ready
   .then(() => {
-    isDbReady = true;
-    console.log('✅ Base de données Turso connectée !');
+    app.listen(PORT, () => {
+      console.log(`Tilus-Tech API démarrée sur le port ${PORT}`);
+    });
   })
   .catch((err) => {
-    console.error('❌ Erreur Turso :', err);
+    console.error('Impossible de se connecter à la base de données Turso :', err);
+    process.exit(1);
   });
-
-app.use((req, res, next) => {
-  if (!req.path.startsWith('/api')) return next();
-  if (isDbReady) {
-    next();
-  } else {
-    res.status(503).json({ error: 'DB en cours de démarrage... Patientez.' });
-  }
-});
-
-module.exports = app;
