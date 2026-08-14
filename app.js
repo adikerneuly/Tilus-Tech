@@ -20,7 +20,14 @@ if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
 
 const app = express();
 
-app.use(helmet());
+app.uapp.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "'unsafe-inline'"]
+    }
+  }
+}));
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:4000',
