@@ -14,4 +14,18 @@ function requireAdmin(req, res, next) {
   }
 }
 
-module.exports = { requireAdmin };
+function requireClient(req, res, next) {
+  const token = req.cookies?.client_session;
+  if (!token) {
+    return res.status(401).json({ error: 'Non authentifié.' });
+  }
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.client = payload;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Session invalide ou expirée.' });
+  }
+}
+
+module.exports = { requireAdmin, requireClient };
