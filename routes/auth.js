@@ -1,19 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
 const { db } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 8,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Trop de tentatives. Réessayez dans quelques minutes.' }
-});
 
 function cookieOptions() {
   return {
@@ -29,7 +20,7 @@ router.get('/status', async (req, res) => {
   res.json({ initialized: Number(r.rows[0].n) > 0 });
 });
 
-router.post('/setup', loginLimiter, async (req, res) => {
+router.post('/setup', async (req, res) => {
   const { username, password } = req.body;
   const existing = await db.execute('SELECT COUNT(*) AS n FROM admin_users');
   if (Number(existing.rows[0].n) > 0) {
@@ -48,7 +39,7 @@ router.post('/setup', loginLimiter, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const r = await db.execute({ sql: 'SELECT * FROM admin_users WHERE username = ?', args: [username] });
   const user = r.rows[0];
