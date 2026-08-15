@@ -38,7 +38,7 @@ router.post('/setup', loginLimiter, async (req, res) => {
   if (!username || !password || password.length < 8) {
     return res.status(400).json({ error: 'Identifiant requis et mot de passe de 8 caractères minimum.' });
   }
-  const hash = await bcrypt.hash(password, 12);
+  const hash = await bcrypt.hash(password, 10);
   await db.execute({
     sql: 'INSERT INTO admin_users (username, password_hash) VALUES (?, ?)',
     args: [username, hash]
@@ -84,7 +84,7 @@ router.post('/change-password', requireAdmin, async (req, res) => {
   if (!newPassword || newPassword.length < 8) {
     return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' });
   }
-  const hash = await bcrypt.hash(newPassword, 12);
+  const hash = await bcrypt.hash(password, 10);
   await db.execute({
     sql: 'UPDATE admin_users SET password_hash = ? WHERE username = ?',
     args: [hash, req.admin.username]
