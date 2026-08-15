@@ -35,7 +35,12 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '200kb' }));
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    return next();
+  }
+  express.json({ limit: '200kb' })(req, res, next);
+});
 app.use(cookieParser());
 
 app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 120 }));
