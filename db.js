@@ -1,5 +1,4 @@
 const { createClient } = require('@libsql/client/web');
-const fs = require('fs');
 
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
@@ -71,6 +70,32 @@ const ready = (async () => {
       'Tilus-Tech — Diagnostic, réparation, mise en ligne',
       "Conception de sites web, installation système et dépannage Windows à distance."
     ]
+  });
+
+  // Migrations douces : ajoute les nouvelles colonnes si elles n'existent pas encore
+  const info = await db.execute('PRAGMA table_info(site_settings)');
+  const cols = info.rows.map((r) => r.name);
+  const migrations = [
+    ['site_name', 'ALTER TABLE site_settings ADD COLUMN site_name TEXT'],
+    ['phone', 'ALTER TABLE site_settings ADD COLUMN phone TEXT'],
+    ['email', 'ALTER TABLE site_settings ADD COLUMN email TEXT'],
+    ['logo_image', 'ALTER TABLE site_settings ADD COLUMN logo_image TEXT'],
+    ['social_links', 'ALTER TABLE site_settings ADD COLUMN social_links TEXT']
+  ];
+  for (const [col, sql] of migrations) {
+    if (!cols.includes(col)) {
+      await db.execute(sql);
+    }
+  }
+
+  // Valeurs par défaut pour les nouvelles colonnes, seulement si elles sont vides
+  await db.execute({
+    sql: `UPDATE site_settings SET
+            site_name = COALESCE(site_name, ?),
+            email = COALESCE(email, ?),
+            social_links = COALESCE(social_links, ?)
+          WHERE id = 1`,
+    args: ['Tilus-Tech', 'contact@tilus-tech.dev', '[]']
   });
 })();
 
