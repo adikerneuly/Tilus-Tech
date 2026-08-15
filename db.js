@@ -1,12 +1,26 @@
 const { createClient } = require('@libsql/client/web');
+const fs = require('fs');
 
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN
 });
 
-// Crée les tables si elles n'existent pas encore, et applique les petites
-// migrations nécessaires. server.js attend cette promesse avant de démarrer.
+// Réessaie automatiquement en cas de coupure réseau passagère avec Turso
+const rawExecute = db.execute.bind(db);
+db.execute = async (arg) => {
+  let lastErr;
+  for (let i = 0; i < 3; i++) {
+    try {
+      return await rawExecute(arg);
+    } catch (err) {
+      lastErr = err;
+      await new Promise((r) => setTimeout(r, 200 * (i + 1)));
+    }
+  }
+  throw lastErr;
+};
+
 const ready = (async () => {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS admin_users (
