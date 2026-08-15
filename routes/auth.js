@@ -38,7 +38,7 @@ router.post('/setup', loginLimiter, async (req, res) => {
   if (!username || !password || password.length < 8) {
     return res.status(400).json({ error: 'Identifiant requis et mot de passe de 8 caractères minimum.' });
   }
-  const hash = await bcrypt.hash(password, 10);
+  const hash = bcrypt.hashSync(password, 10);
   await db.execute({
     sql: 'INSERT INTO admin_users (username, password_hash) VALUES (?, ?)',
     args: [username, hash]
@@ -55,7 +55,7 @@ router.post('/login', loginLimiter, async (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Identifiants invalides.' });
   }
-  const valid = await bcrypt.compare(password, user.password_hash);
+  const valid = bcrypt.compareSync(password, user.password_hash);
   if (!valid) {
     return res.status(401).json({ error: 'Identifiants invalides.' });
   }
@@ -77,14 +77,14 @@ router.post('/change-password', requireAdmin, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const r = await db.execute({ sql: 'SELECT * FROM admin_users WHERE username = ?', args: [req.admin.username] });
   const user = r.rows[0];
-  const valid = await bcrypt.compare(currentPassword, user.password_hash);
+  const valid = bcrypt.compareSync(currentPassword, user.password_hash);
   if (!valid) {
     return res.status(401).json({ error: 'Mot de passe actuel incorrect.' });
   }
   if (!newPassword || newPassword.length < 8) {
     return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' });
   }
-  const hash = await bcrypt.hash(password, 10);
+  const hash = bcrypt.hashSync(newPassword, 10);
   await db.execute({
     sql: 'UPDATE admin_users SET password_hash = ? WHERE username = ?',
     args: [hash, req.admin.username]
