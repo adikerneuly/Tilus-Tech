@@ -1,39 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Conception de sites web, installation système et dépannage Windows à distance.">
-<title>Tilus-Tech — Diagnostic, réparation, mise en ligne</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
-  
-  <style>
-  :root{
-    --bg:#0b1220; --surface:#101a2c; --surface-2:#132239; --border:#22314d;
-    --text:#e7ecf3; --muted:#8b98ac; --teal:#4fd1c5; --amber:#f5a623; --danger:#e2574c; --radius:10px;
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;position:relative;}
-  body::before{
-    content:"";position:fixed;inset:0;z-index:-2;
-    background-image:var(--bg-image, none);background-size:cover;background-position:center;background-attachment:fixed;
-  }
-  body::after{
-    content:"";position:fixed;inset:0;z-index:-1;
-    background:linear-gradient(180deg, rgba(11,18,32,0.90), rgba(11,18,32,0.97));
-    opacity:var(--bg-overlay, 0);
-  }
   body.has-bg::after{opacity:1;}
   h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
   .mono{font-family:'JetBrains Mono',monospace;}
