@@ -285,9 +285,53 @@ function api(path, opts={}){
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ---------------- PWA : installation et hors-ligne ---------------- */
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('/sw.js').catch(()=>{}); });
+
+  if('serviceWorker' in navigator){
+  window.addEventListener('load', async ()=>{
+    try{
+      const reg = await navigator.serviceWorker.register('/sw.js');
+
+      if(reg.waiting){ showMandatoryUpdate(reg.waiting); }
+
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            showMandatoryUpdate(newWorker);
+          }
+        });
+      });
+    }catch(e){}
+  });
+
+  let reloadedForUpdate = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(reloadedForUpdate) return;
+    reloadedForUpdate = true;
+    window.location.reload();
+  });
 }
+
+function showMandatoryUpdate(worker){
+  if(document.getElementById('updateOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'updateOverlay';
+  overlay.className = 'modal-backdrop';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>Nouvelle version disponible</h3>
+      <p class="hint">Une mise à jour de l'application est prête. Vous devez l'installer pour continuer à utiliser Tilus-Tech.</p>
+      <div class="row-btns" style="margin-top:0;">
+        <button class="btn btn-primary" id="updateNowBtn" style="flex:1;">Mettre à jour maintenant</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('updateNowBtn').onclick = ()=>{
+    worker.postMessage('SKIP_WAITING');
+  };
+}
+
 let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault();
